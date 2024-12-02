@@ -108,15 +108,13 @@ fn day01_num_frequency(n: Int, ns: List(Int)) -> Int {
   })
 }
 
-fn day01_all_num_frequency(ns1: List(Int), ns2: List(Int)) -> List(#(Int,Int)) {
-  list.map(ns1, fn(x) {#(x,day01_num_frequency(x,ns2))})
+fn day01_all_num_frequency(ns1: List(Int), ns2: List(Int)) -> List(#(Int, Int)) {
+  list.map(ns1, fn(x) { #(x, day01_num_frequency(x, ns2)) })
 }
 
 fn day01_all_similarity_score(input: Day01Input) -> Int {
-  let list1 = list.map(input, fn(x){x.0})
-  let list2 = list.map(input, fn(x){x.1})
+  let list1 = list.map(input, fn(x) { x.0 })
+  let list2 = list.map(input, fn(x) { x.1 })
   let freqs = day01_all_num_frequency(list1, list2)
-  list.fold(freqs, 0, fn(a,x) {
-    a + {x.0 * x.1}
-  })
+  list.fold(freqs, 0, fn(a, x) { a + { x.0 * x.1 } })
 }

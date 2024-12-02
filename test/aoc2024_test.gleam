@@ -1,7 +1,7 @@
+import aoc2024
+import gleam/option.{Some}
 import gleeunit
 import gleeunit/should
-import gleam/option.{Some}
-import aoc2024
 
 pub fn main() {
   gleeunit.main()
@@ -14,8 +14,8 @@ pub fn hello_world_test() {
 }
 
 pub fn day01_part1_test() {
-
-  let part1_input = "3   4
+  let part1_input =
+    "3   4
 4   3
 2   5
 1   3
@@ -23,7 +23,8 @@ pub fn day01_part1_test() {
 3   3
 "
 
-  let part1_input2 = "53906   14872
+  let part1_input2 =
+    "53906   14872
 35867   86182
 61313   43656
 23620   85315
@@ -1024,17 +1025,16 @@ pub fn day01_part1_test() {
 28292   57181
 14969   84572
 "
-  
+
   aoc2024.day01_part1(part1_input)
   |> should.equal(Some(11))
 
   aoc2024.day01_part1(part1_input2)
-  |> should.equal(Some(1873376))
+  |> should.equal(Some(1_873_376))
 
   aoc2024.day01_part2(part1_input)
   |> should.equal(Some(31))
 
   aoc2024.day01_part2(part1_input2)
-  |> should.equal(Some(18997088))
-
+  |> should.equal(Some(18_997_088))
 }
