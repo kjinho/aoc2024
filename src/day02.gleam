@@ -83,7 +83,7 @@ pub fn ascending_comparator(first, second) -> Bool {
 }
 
 pub fn descending_comparator(first, second) -> Bool {
-  first > second && first - 3 <= second
+  ascending_comparator(second, first)
 }
 
 pub fn within_range_p(
