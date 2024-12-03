@@ -100,7 +100,7 @@ pub fn within_range_p(
           False -> list.Stop(#(curr, False))
         }
       })
-      // don't need the first value ('prev')
+      // don't need the first value ('prev'), just the result
       |> pair.second()
   }
 }
