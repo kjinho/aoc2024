@@ -31,16 +31,16 @@ pub fn day01_part1_test() {
     |> simplifile.read()
     |> result.unwrap("")
 
-  day01.day01_part1(part1_input)
+  day01.part1(part1_input)
   |> should.equal(Some(11))
 
-  day01.day01_part1(part1_input2)
+  day01.part1(part1_input2)
   |> should.equal(Some(1_873_376))
 
-  day01.day01_part2(part1_input)
+  day01.part2(part1_input)
   |> should.equal(Some(31))
 
-  day01.day01_part2(part1_input2)
+  day01.part2(part1_input2)
   |> should.equal(Some(18_997_088))
 }
 
