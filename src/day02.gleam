@@ -1,6 +1,7 @@
 import gleam/function
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/pair
 import nibble
 import nibble/lexer
 
@@ -75,30 +76,30 @@ pub fn safe_p(input: Report) -> Bool {
   || within_range_p(input, descending_comparator)
 }
 
-fn ascending_comparator(first, second) -> Bool {
+pub fn ascending_comparator(first, second) -> Bool {
   first < second && first + 3 >= second
 }
 
-fn descending_comparator(first, second) -> Bool {
+pub fn descending_comparator(first, second) -> Bool {
   first > second && first - 3 <= second
 }
 
-fn within_range_p(input: Report, comparator: fn(Level, Level) -> Bool) -> Bool {
+pub fn within_range_p(
+  input: Report,
+  comparator: fn(Level, Level) -> Bool,
+) -> Bool {
   case input {
     [] -> True
-    [_head] -> True
-    [head, second] -> comparator(head, second)
-    [head, ..tail] -> {
-      let #(_, result) =
-        list.fold_until(tail, #(head, True), fn(x, curr) {
-          let #(prev, _) = x
-          case comparator(prev, curr) {
-            True -> list.Continue(#(curr, True))
-            False -> list.Stop(#(curr, False))
-          }
-        })
-      result
-    }
+    [head, ..tail] ->
+      // accumulator is #(prev, result)
+      list.fold_until(tail, #(head, True), fn(acc, curr) {
+        case comparator(pair.first(acc), curr) {
+          True -> list.Continue(#(curr, True))
+          False -> list.Stop(#(curr, False))
+        }
+      })
+      // don't need the first value ('prev')
+      |> pair.second()
   }
 }
 

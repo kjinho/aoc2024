@@ -59,14 +59,14 @@ pub fn day02_test() {
     |> simplifile.read()
     |> result.unwrap("")
 
-  // day02.within_range_p([], day02.descending_comparator)
-  // |> should.be_true()
+  day02.within_range_p([], day02.descending_comparator)
+  |> should.be_true()
 
-  // day02.within_range_p([5], day02.descending_comparator)
-  // |> should.be_true()
+  day02.within_range_p([5], day02.descending_comparator)
+  |> should.be_true()
 
-  // day02.within_range_p([5, 4], day02.descending_comparator)
-  // |> should.be_true()
+  day02.within_range_p([5, 4], day02.descending_comparator)
+  |> should.be_true()
 
   day02.safe_p([7, 6, 4, 2, 1])
   |> should.be_true()
