@@ -1,7 +1,7 @@
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/order
+import gleam/pair
 import nibble
 import nibble/lexer
 
@@ -67,19 +67,13 @@ pub fn day01_part1(input: String) -> Option(Int) {
 }
 
 fn day01_sort_input(input: Day01Input) -> Day01Input {
-  let sort_fn = fn(a, b) {
-    case a < b {
-      True -> order.Lt
-      False -> order.Gt
-    }
-  }
   let first_list =
-    list.map(input, fn(x) { x.0 })
-    |> list.sort(sort_fn)
+    list.map(input, pair.first)
+    |> list.sort(int.compare)
   let second_list =
-    list.map(input, fn(x) { x.1 })
-    |> list.sort(sort_fn)
-  list.map2(first_list, second_list, fn(a, b) { #(a, b) })
+    list.map(input, pair.second)
+    |> list.sort(int.compare)
+  list.map2(first_list, second_list, pair.new)
 }
 
 fn day01_row_distance(row: NumberRow) -> Int {
@@ -89,7 +83,7 @@ fn day01_row_distance(row: NumberRow) -> Int {
 
 fn day01_distances(input: Day01Input) -> Int {
   list.map(input, day01_row_distance)
-  |> list.fold(0, fn(a, b) { a + b })
+  |> list.fold(0, int.add)
 }
 
 pub fn day01_part2(input: String) -> Option(Int) {
@@ -99,12 +93,7 @@ pub fn day01_part2(input: String) -> Option(Int) {
 }
 
 fn day01_num_frequency(n: Int, ns: List(Int)) -> Int {
-  list.fold(ns, 0, fn(a, x) {
-    case n == x {
-      True -> a + 1
-      _ -> a
-    }
-  })
+  list.count(ns, fn(x) { n == x })
 }
 
 fn day01_all_num_frequency(ns1: List(Int), ns2: List(Int)) -> List(#(Int, Int)) {
@@ -112,8 +101,8 @@ fn day01_all_num_frequency(ns1: List(Int), ns2: List(Int)) -> List(#(Int, Int)) 
 }
 
 fn day01_all_similarity_score(input: Day01Input) -> Int {
-  let list1 = list.map(input, fn(x) { x.0 })
-  let list2 = list.map(input, fn(x) { x.1 })
+  let list1 = list.map(input, pair.first)
+  let list2 = list.map(input, pair.second)
   let freqs = day01_all_num_frequency(list1, list2)
   list.fold(freqs, 0, fn(a, x) { a + { x.0 * x.1 } })
 }
