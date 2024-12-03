@@ -60,14 +60,16 @@ pub fn parse_input(input: String) -> Option(Input) {
 // business logic 
 
 pub fn part1(input: String) -> Option(Int) {
-  parse_input(input)
-  |> option.map(fn(x) { list.map(x, safe_p) })
-  |> option.map(fn(x) { list.count(x, function.identity) })
+  part_runner(input, safe_p)
 }
 
 pub fn part2(input: String) -> Option(Int) {
+  part_runner(input, safe_dampened_p)
+}
+
+fn part_runner(input: String, safe_fn: fn(Report) -> Bool) -> Option(Int) {
   parse_input(input)
-  |> option.map(fn(x) { list.map(x, safe_dampened_p) })
+  |> option.map(fn(x) { list.map(x, safe_fn) })
   |> option.map(fn(x) { list.count(x, function.identity) })
 }
 
@@ -104,14 +106,10 @@ pub fn within_range_p(
 }
 
 pub fn safe_dampened_p(input: Report) -> Bool {
-  within_range_p(input, ascending_comparator)
-  || within_range_p(input, descending_comparator)
+  safe_p(input)
   || {
     list.combinations(input, list.length(input) - 1)
-    |> list.map(fn(x) {
-      within_range_p(x, ascending_comparator)
-      || within_range_p(x, descending_comparator)
-    })
+    |> list.map(safe_p)
     |> list.contains(True)
   }
 }
