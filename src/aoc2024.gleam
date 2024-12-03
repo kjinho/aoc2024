@@ -3,7 +3,6 @@ import gleam/io
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/order
-import gleam/result
 import nibble.{do, return}
 import nibble/lexer
 
@@ -11,53 +10,65 @@ pub fn main() {
   io.println("Hello from aoc2024!")
 }
 
+// Day 01 Data
+
 type NumberRow =
   #(Int, Int)
 
 type Day01Input =
   List(NumberRow)
 
+// Day 01 Parser
+
 type Token {
   Num(Int)
   Newline
 }
 
+fn day01_lexer() -> lexer.Lexer(Token, Nil) {
+  lexer.simple([
+    lexer.int(Num),
+    lexer.token("\n", Newline),
+    lexer.spaces(Nil) |> lexer.ignore,
+  ])
+}
+
+fn day01_num_parser() -> nibble.Parser(Int, Token, a) {
+  use tok <- nibble.take_map("expected number")
+  case tok {
+    Num(num) -> Some(num)
+    _ -> None
+  }
+}
+
+fn day01_row_parser() -> nibble.Parser(#(Int, Int), Token, a) {
+  use l_number <- do(day01_num_parser())
+  use r_number <- do(day01_num_parser())
+  use _ <- do(nibble.token(Newline))
+  return(#(l_number, r_number))
+}
+
+fn day01_input_parser() -> nibble.Parser(List(#(Int, Int)), Token, b) {
+  use rows <- do(nibble.many(day01_row_parser()))
+  return(rows)
+}
+
 fn day01_parse_input(input: String) -> Option(Day01Input) {
-  let lexer =
-    lexer.simple([
-      lexer.int(Num),
-      lexer.token("\n", Newline),
-      lexer.spaces(Nil) |> lexer.ignore,
-    ])
-
-  let parser_num = fn() {
-    use tok <- nibble.take_map("expected number")
-    case tok {
-      Num(num) -> Some(num)
-      _ -> None
-    }
+  case lexer.run(input, day01_lexer()) {
+    Ok(a) ->
+      nibble.run(a, day01_input_parser())
+      |> option.from_result()
+    _ -> None
   }
+}
 
-  let parser_row = {
-    use l_number <- do(parser_num())
-    use r_number <- do(parser_num())
-    use _ <- do(nibble.token(Newline))
+// Day 01 Logic
 
-    return(#(l_number, r_number))
-  }
-
-  let parser = {
-    use rows <- do(nibble.many(parser_row))
-
-    return(rows)
-  }
-
+pub fn day01_part1(input: String) -> Option(Int) {
   input
-  |> lexer.run(lexer)
-  |> result.then(fn(x) {
-    nibble.run(x, parser) |> result.replace_error(lexer.NoMatchFound(0, 0, ""))
-  })
-  |> option.from_result()
+  |> day01_parse_input()
+  |> option.map(day01_sort_input)
+  |> option.map(day01_distances)
 }
 
 fn day01_sort_input(input: Day01Input) -> Day01Input {
@@ -84,13 +95,6 @@ fn day01_row_distance(row: NumberRow) -> Int {
 fn day01_distances(input: Day01Input) -> Int {
   list.map(input, day01_row_distance)
   |> list.fold(0, fn(a, b) { a + b })
-}
-
-pub fn day01_part1(input: String) -> Option(Int) {
-  input
-  |> day01_parse_input()
-  |> option.map(day01_sort_input)
-  |> option.map(day01_distances)
 }
 
 pub fn day01_part2(input: String) -> Option(Int) {
