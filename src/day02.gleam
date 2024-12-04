@@ -105,9 +105,7 @@ pub fn within_range_p(
   case input {
     [] -> True
     [head, ..tail] ->
-      // accumulator is #(prev, result)
       list.fold_until(tail, #(head, True), iterate_fn)
-      // don't need the first value ('prev'), just the result
       |> pair.second()
   }
 }
