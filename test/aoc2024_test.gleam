@@ -1,5 +1,6 @@
 import day01
 import day02
+import day03
 import gleam/option.{Some}
 import gleam/result
 import gleeunit
@@ -100,4 +101,34 @@ pub fn day02_test() {
 
   day02.part2(part1_input2)
   |> should.equal(Some(566))
+}
+
+pub fn day03_test() {
+  let part1_input =
+    //"%mul(2,4)xxmul(5,2)"
+    "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
+
+  let part1_input2 =
+    "input/day03.input"
+    |> simplifile.read()
+    |> result.unwrap("")
+
+  let part2_input =
+    "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
+
+  part1_input
+  |> day03.part1()
+  |> should.equal(161)
+
+  part1_input2
+  |> day03.part1()
+  |> should.equal(188_192_787)
+
+  part2_input
+  |> day03.part2()
+  |> should.equal(48)
+
+  part1_input2
+  |> day03.part2()
+  |> should.equal(113_965_544)
 }
