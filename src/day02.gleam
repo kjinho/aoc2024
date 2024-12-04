@@ -78,28 +78,35 @@ pub fn safe_p(input: Report) -> Bool {
   || within_range_p(input, descending_comparator)
 }
 
-pub fn ascending_comparator(first, second) -> Bool {
+pub fn ascending_comparator(first: Level, second: Level) -> Bool {
   first < second && first + 3 >= second
 }
 
-pub fn descending_comparator(first, second) -> Bool {
+pub fn descending_comparator(first: Level, second: Level) -> Bool {
   ascending_comparator(second, first)
+}
+
+fn iterate(
+  acc: #(Level, Bool),
+  curr: Level,
+  comparator: fn(Level, Level) -> Bool,
+) -> list.ContinueOrStop(#(Level, Bool)) {
+  case comparator(pair.first(acc), curr) {
+    True -> list.Continue(#(curr, True))
+    False -> list.Stop(#(curr, False))
+  }
 }
 
 pub fn within_range_p(
   input: Report,
   comparator: fn(Level, Level) -> Bool,
 ) -> Bool {
+  let iterate_fn = fn(acc, curr) { iterate(acc, curr, comparator) }
   case input {
     [] -> True
     [head, ..tail] ->
       // accumulator is #(prev, result)
-      list.fold_until(tail, #(head, True), fn(acc, curr) {
-        case comparator(pair.first(acc), curr) {
-          True -> list.Continue(#(curr, True))
-          False -> list.Stop(#(curr, False))
-        }
-      })
+      list.fold_until(tail, #(head, True), iterate_fn)
       // don't need the first value ('prev'), just the result
       |> pair.second()
   }
