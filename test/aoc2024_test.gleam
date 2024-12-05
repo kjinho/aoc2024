@@ -1,8 +1,7 @@
 import day01
 import day02
 import day03
-
-//import day04
+import day04
 import day05
 import gleam/option.{Some}
 import gleam/result
@@ -136,33 +135,39 @@ pub fn day03_test() {
   |> should.equal(113_965_544)
 }
 
-// pub fn day04_test() {
-//   let part1_input =
-//     "MMMSXXMASM
-// MSAMXMSMSA
-// AMXSXMAAMM
-// MSAMASMSMX
-// XMASAMXAMM
-// XXAMMXXAMA
-// SMSMSASXSS
-// SAXAMASAAA
-// MAMMMXMMMM
-// MXMXAXMASX
-// "
+pub fn day04_test() {
+  let part1_input =
+    "MMMSXXMASM
+MSAMXMSMSA
+AMXSXMAAMM
+MSAMASMSMX
+XMASAMXAMM
+XXAMMXXAMA
+SMSMSASXSS
+SAXAMASAAA
+MAMMMXMMMM
+MXMXAXMASX
+"
 
-//   let part1_input2 =
-//     "input/day04.input"
-//     |> simplifile.read()
-//     |> result.unwrap("")
+  let part1_input2 =
+    "input/day04.input"
+    |> simplifile.read()
+    |> result.unwrap("")
 
-//   part1_input
-//   |> day04.part1()
-//   |> should.equal(Some(18))
+  part1_input
+  |> day04.part1()
+  |> should.equal(Some(18))
+  // part1_input2
+  // |> day04.part1()
+  // |> should.equal(Some(18))
 
-//   part1_input2
-//   |> day04.part1()
-//   |> should.equal(Some(18))
-// }
+  part1_input
+  |> day04.part2()
+  |> should.equal(Some(9))
+  // part1_input2
+  // |> day04.part2()
+  // |> should.equal(Some(9))
+}
 
 pub fn day05_test() {
   let part1_input =
