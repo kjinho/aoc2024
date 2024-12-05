@@ -1,6 +1,9 @@
 import day01
 import day02
 import day03
+
+//import day04
+import day05
 import gleam/option.{Some}
 import gleam/result
 import gleeunit
@@ -131,4 +134,86 @@ pub fn day03_test() {
   part1_input2
   |> day03.part2()
   |> should.equal(113_965_544)
+}
+
+// pub fn day04_test() {
+//   let part1_input =
+//     "MMMSXXMASM
+// MSAMXMSMSA
+// AMXSXMAAMM
+// MSAMASMSMX
+// XMASAMXAMM
+// XXAMMXXAMA
+// SMSMSASXSS
+// SAXAMASAAA
+// MAMMMXMMMM
+// MXMXAXMASX
+// "
+
+//   let part1_input2 =
+//     "input/day04.input"
+//     |> simplifile.read()
+//     |> result.unwrap("")
+
+//   part1_input
+//   |> day04.part1()
+//   |> should.equal(Some(18))
+
+//   part1_input2
+//   |> day04.part1()
+//   |> should.equal(Some(18))
+// }
+
+pub fn day05_test() {
+  let part1_input =
+    "47|53
+97|13
+97|61
+97|47
+75|29
+61|13
+75|53
+29|13
+97|29
+53|29
+61|53
+97|53
+61|29
+47|13
+75|47
+97|75
+47|61
+75|61
+47|29
+75|13
+53|13
+
+75,47,61,53,29
+97,61,53,29,13
+75,29,13
+75,97,47,61,53
+61,13,29
+97,13,75,29,47
+"
+
+  let part1_input2 =
+    "input/day05.input"
+    |> simplifile.read()
+    |> result.unwrap("")
+
+  part1_input
+  |> day05.part1()
+  |> should.equal(Some(143))
+
+  part1_input2
+  |> day05.part1()
+  |> should.equal(Some(6242))
+
+  part1_input
+  |> day05.part2()
+  |> should.equal(Some(123))
+
+  part1_input2
+  |> day05.part2()
+  |> should.equal(Some(5169))
 }
