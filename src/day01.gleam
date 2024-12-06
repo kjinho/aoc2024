@@ -2,6 +2,7 @@ import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/pair
+import gleam/result
 import nibble
 import nibble/lexer
 
@@ -15,9 +16,14 @@ type Day01Input =
 
 // Day 01 Parser
 
-type Token {
+pub type Token {
   Num(Int)
   Newline
+}
+
+pub type Error(c) {
+  LexInputError(lexer.Error)
+  ParseInputError(List(nibble.DeadEnd(Token, c)))
 }
 
 fn lexer() -> lexer.Lexer(Token, Nil) {
@@ -48,22 +54,22 @@ fn input_parser() -> nibble.Parser(List(#(Int, Int)), Token, b) {
   nibble.return(rows)
 }
 
-fn parse_input(input: String) -> Option(Day01Input) {
-  case lexer.run(input, lexer()) {
-    Ok(a) ->
-      nibble.run(a, input_parser())
-      |> option.from_result()
-    _ -> None
-  }
+fn parse_input(input: String) -> Result(Day01Input, Error(a)) {
+  use a <- result.try(
+    lexer.run(input, lexer())
+    |> result.map_error(LexInputError),
+  )
+  nibble.run(a, input_parser())
+  |> result.map_error(ParseInputError)
 }
 
 // Day 01 Logic
 
-pub fn part1(input: String) -> Option(Int) {
-  input
-  |> parse_input()
-  |> option.map(sort_input)
-  |> option.map(distances)
+pub fn part1(input: String) -> Result(Int, Error(a)) {
+  use parsed_input <- result.map(parse_input(input))
+  parsed_input
+  |> sort_input
+  |> distances
 }
 
 fn sort_input(input: Day01Input) -> Day01Input {
@@ -86,10 +92,9 @@ fn distances(input: Day01Input) -> Int {
   |> list.fold(0, int.add)
 }
 
-pub fn part2(input: String) -> Option(Int) {
-  input
-  |> parse_input()
-  |> option.map(all_similarity_score)
+pub fn part2(input: String) -> Result(Int, Error(c)) {
+  use parsed_input <- result.map(parse_input(input))
+  all_similarity_score(parsed_input)
 }
 
 fn num_frequency(n: Int, ns: List(Int)) -> Int {

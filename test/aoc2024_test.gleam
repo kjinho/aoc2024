@@ -35,16 +35,16 @@ pub fn day01_part1_test() {
     |> result.unwrap("")
 
   day01.part1(part1_input)
-  |> should.equal(Some(11))
+  |> should.equal(Ok(11))
 
   day01.part1(part1_input2)
-  |> should.equal(Some(1_873_376))
+  |> should.equal(Ok(1_873_376))
 
   day01.part2(part1_input)
-  |> should.equal(Some(31))
+  |> should.equal(Ok(31))
 
   day01.part2(part1_input2)
-  |> should.equal(Some(18_997_088))
+  |> should.equal(Ok(18_997_088))
 }
 
 pub fn day02_test() {
