@@ -68,9 +68,10 @@ pub fn part2(input: String) -> Option(Int) {
 }
 
 fn part_runner(input: String, safe_fn: fn(Report) -> Bool) -> Option(Int) {
-  parse_input(input)
-  |> option.map(fn(x) { list.map(x, safe_fn) })
-  |> option.map(fn(x) { list.count(x, function.identity) })
+  use parsed_input <- option.map(parse_input(input))
+  parsed_input
+  |> list.map(safe_fn)
+  |> list.count(function.identity)
 }
 
 pub fn safe_p(input: Report) -> Bool {

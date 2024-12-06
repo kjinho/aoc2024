@@ -127,16 +127,21 @@ fn get_middle_number(update: Update) -> Option(Page) {
   }
 }
 
+fn part_runner(
+  input: String,
+  middle_fn: fn(PageOrderingRules, Updates) -> Updates,
+) -> Option(Int) {
+  use parsed_input <- option.map(parse_input(input))
+  let #(rules, updates) = parsed_input
+  middle_fn(rules, updates)
+  |> list.map(get_middle_number)
+  |> option.values()
+  |> list.fold(0, int.add)
+}
+
 pub fn part1(input: String) -> Option(Int) {
-  input
-  |> parse_input()
-  |> option.map(fn(x) {
-    let #(rules, updates) = x
-    list.filter(updates, update_correct_p(rules, _, True))
-    |> list.map(get_middle_number)
-    |> option.values()
-    |> list.fold(0, int.add)
-  })
+  use rules, updates <- part_runner(input)
+  list.filter(updates, update_correct_p(rules, _, True))
 }
 
 fn compare_pages(
@@ -155,14 +160,7 @@ fn compare_pages(
 }
 
 pub fn part2(input: String) -> Option(Int) {
-  input
-  |> parse_input()
-  |> option.map(fn(x) {
-    let #(rules, updates) = x
-    list.filter(updates, fn(x) { !update_correct_p(rules, x, True) })
-    |> list.map(list.sort(_, fn(a, b) { compare_pages(a, b, rules) }))
-    |> list.map(get_middle_number)
-    |> option.values()
-    |> list.fold(0, int.add)
-  })
+  use rules, updates <- part_runner(input)
+  list.filter(updates, fn(x) { !update_correct_p(rules, x, True) })
+  |> list.map(list.sort(_, fn(a, b) { compare_pages(a, b, rules) }))
 }
