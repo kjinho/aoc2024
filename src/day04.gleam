@@ -1,12 +1,8 @@
 import gleam/function
-import gleam/int
-import gleam/io
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
-import gleam/set.{type Set}
 import gleam/string
-import glearray.{type Array}
 
 /// String, width Int, height Int
 pub type Crossword {
@@ -25,7 +21,6 @@ type ThreeByThree {
 }
 
 fn new_4x4(crossword, x, y) -> Result(FourByFour, Error) {
-  let Crossword(_, width, height) = crossword
   case crossword {
     Crossword(_, width, height)
       if x < 0 || y < 0 || x >= width - 3 || y >= height - 3
@@ -35,7 +30,6 @@ fn new_4x4(crossword, x, y) -> Result(FourByFour, Error) {
 }
 
 fn new_3x3(crossword, x, y) -> Result(ThreeByThree, Error) {
-  let Crossword(_, width, height) = crossword
   case crossword {
     Crossword(_, width, height)
       if x < 0 || y < 0 || x >= width - 2 || y >= height - 2
@@ -55,32 +49,6 @@ type Error {
 fn relative_to_absolute(relative_point, x, y) {
   let Coord(a, b) = relative_point
   Coord(a + x, b + y)
-}
-
-fn get_4x4(relative_point: Coord, table: FourByFour) -> Result(String, Error) {
-  let FourByFour(crossword, x_offset, y_offset) = table
-  let point = relative_to_absolute(relative_point, x_offset, y_offset)
-  let index = convert_coord_to_index(crossword, point)
-  let Crossword(raw, width, height) = crossword
-  case point {
-    Coord(x, y) if 0 <= x && x < width && 0 <= y && y < height ->
-      string.slice(raw, index, 1)
-      |> Ok()
-    _ -> Error(OOB)
-  }
-}
-
-fn get_3x3(relative_point: Coord, table: ThreeByThree) -> Result(String, Error) {
-  let ThreeByThree(crossword, x_offset, y_offset) = table
-  let point = relative_to_absolute(relative_point, x_offset, y_offset)
-  let index = convert_coord_to_index(crossword, point)
-  let Crossword(raw, width, height) = crossword
-  case point {
-    Coord(x, y) if 0 <= x && x < width && 0 <= y && y < height ->
-      string.slice(raw, index, 1)
-      |> Ok()
-    _ -> Error(OOB)
-  }
 }
 
 fn get_lines_3x3(table: ThreeByThree) -> List(Line) {
@@ -111,10 +79,6 @@ fn get_lines_4x4(table: FourByFour) -> List(Line) {
 
   [diag_down, diag_up, ..list.append(rows, cols)]
   |> list.map(list.map(_, relative_to_absolute(_, x_offset, y_offset)))
-}
-
-fn line_eq(line1: Line, line2: Line) -> Bool {
-  list.all(line1, list.contains(line2, _))
 }
 
 fn line_to_string(crossword, line) -> String {

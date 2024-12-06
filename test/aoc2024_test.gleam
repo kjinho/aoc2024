@@ -149,7 +149,7 @@ MAMMMXMMMM
 MXMXAXMASX
 "
 
-  let part1_input2 =
+  let _part1_input2 =
     "input/day04.input"
     |> simplifile.read()
     |> result.unwrap("")
