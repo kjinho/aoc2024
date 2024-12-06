@@ -3,6 +3,7 @@ import day02
 import day03
 import day04
 import day05
+import day06
 import gleam/option.{Some}
 import gleam/result
 import gleeunit
@@ -221,4 +222,40 @@ pub fn day05_test() {
   part1_input2
   |> day05.part2()
   |> should.equal(Some(5169))
+}
+
+pub fn day06_test() {
+  let part1_input =
+    "....#.....
+.........#
+..........
+..#.......
+.......#..
+..........
+.#..^.....
+........#.
+#.........
+......#...
+"
+
+  let part1_input2 =
+    "input/day06.input"
+    |> simplifile.read()
+    |> result.unwrap("")
+
+  part1_input
+  |> day06.part1()
+  |> should.equal(Ok(41))
+
+  part1_input2
+  |> day06.part1()
+  |> should.equal(Ok(5551))
+
+  part1_input
+  |> day06.part2()
+  |> should.equal(Ok(6))
+
+  part1_input2
+  |> day06.part2()
+  |> should.equal(Ok(1939))
 }
