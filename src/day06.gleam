@@ -1,10 +1,20 @@
 import gleam/bool
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/otp/task
 import gleam/pair
 import gleam/result
 import gleam/set.{type Set}
 import gleam/string
+
+/// The maximum number of times to iterate states
+const maximum_iterations: Int = 10_000
+
+/// Timeout for parallel processes
+const maximum_wait: Int = 1000
+
+/// For parallel processing, the size of each chunk
+const chunk_size: Int = 200
 
 type Coord {
   Coord(x: Int, y: Int)
@@ -114,6 +124,7 @@ pub type Error {
   MultipleGuards
   EmptyInput(Nil)
   MissingGuard
+  TimeOut(Int)
 }
 
 fn string_to_dir(s: String) -> Result(Dir, Error) {
@@ -130,26 +141,24 @@ fn parse_line(
   line: String,
   y: Int,
 ) -> Result(#(Set(Coord), Option(GuardState)), Error) {
-  line
-  |> string.to_graphemes()
-  |> list.index_fold(Ok(#(set.new(), None)), fn(acc, char, x_index) {
-    case char {
-      "^" | ">" | "v" | "<" -> {
-        use res <- result.try(acc)
-        let #(obs, guard) = res
-        use <- bool.guard(option.is_some(guard), Error(MultipleGuards))
-        use g <- result.map(string_to_dir(char))
-        #(obs, Some(GuardState(Coord(x_index, y), g)))
-      }
-      "#" -> {
-        use res <- result.map(acc)
-        use a <- pair.map_first(res)
-        set.insert(a, Coord(x_index, y))
-      }
-      "." -> acc
-      str -> Error(LineParseError(str))
+  let chars = string.to_graphemes(line)
+  use acc, char, x_index <- list.index_fold(chars, Ok(#(set.new(), None)))
+  case char {
+    "^" | ">" | "v" | "<" -> {
+      use res <- result.try(acc)
+      let #(obs, guard) = res
+      use <- bool.guard(option.is_some(guard), Error(MultipleGuards))
+      use g <- result.map(string_to_dir(char))
+      #(obs, Some(GuardState(Coord(x_index, y), g)))
     }
-  })
+    "#" -> {
+      use res <- result.map(acc)
+      use a <- pair.map_first(res)
+      set.insert(a, Coord(x_index, y))
+    }
+    "." -> acc
+    str -> Error(LineParseError(str))
+  }
 }
 
 fn parse_input(input: String) -> Result(State, Error) {
@@ -161,35 +170,31 @@ fn parse_input(input: String) -> Result(State, Error) {
   )
   let width = string.length(head)
   let height = list.length(lines)
-  list.index_fold(lines, Ok(#(set.new(), None)), fn(acc, line, line_index) {
-    use res <- result.try(acc)
-    let #(res_obs, g) = res
-    case parse_line(line, line_index), g {
-      Error(x), _ -> Error(x)
-      Ok(#(_, Some(_))), Some(_) -> Error(MultipleGuards)
-      Ok(#(obstacles, _)), Some(guard) | Ok(#(obstacles, Some(guard))), _ ->
-        Ok(#(set.union(obstacles, res_obs), Some(guard)))
-      Ok(#(obstacles, None)), None -> Ok(#(set.union(obstacles, res_obs), None))
-    }
-  })
-  |> result.try(fn(x) {
-    case x {
-      #(_, None) -> Error(MissingGuard)
-      #(obs, Some(g)) -> Ok(new(Map(obs, width, height), g))
-    }
-  })
+  let res =
+    list.index_fold(lines, Ok(#(set.new(), None)), fn(acc, line, line_index) {
+      use acc_unwrapped <- result.try(acc)
+      let #(acc_obs, g) = acc_unwrapped
+      case parse_line(line, line_index), g {
+        Error(x), _ -> Error(x)
+        Ok(#(_, Some(_))), Some(_) -> Error(MultipleGuards)
+        Ok(#(obstacles, None)), None ->
+          Ok(#(set.union(obstacles, acc_obs), None))
+        Ok(#(obstacles, _)), Some(guard) | Ok(#(obstacles, Some(guard))), _ ->
+          Ok(#(set.union(obstacles, acc_obs), Some(guard)))
+      }
+    })
+  use x <- result.try(res)
+  case x {
+    #(_, None) -> Error(MissingGuard)
+    #(obs, Some(g)) -> Ok(new(Map(obs, width, height), g))
+  }
 }
 
 pub fn part1(input: String) {
   use parsed <- result.try(parse_input(input))
-  use result <- result.try(simulate_guard(parsed, 10_000))
+  use result <- result.try(simulate_guard(parsed, maximum_iterations))
   Ok(distinct_positions(result))
 }
-
-// fn already_obstacle_p(state: State, coord: Coord) -> Bool {
-//   let State(Map(a, _, _), _, _) = state
-//   set.contains(a, coord)
-// }
 
 fn add_obstacle(state: State, coord: Coord) -> State {
   let State(map, _, _) = state
@@ -197,22 +202,40 @@ fn add_obstacle(state: State, coord: Coord) -> State {
   State(..state, map: Map(..map, obstacles: set.insert(obs, coord)))
 }
 
+fn part2_worker(state, coord) {
+  let new_state = add_obstacle(state, coord)
+  case simulate_guard(new_state, maximum_iterations) {
+    Error(_) -> 1
+    _ -> 0
+  }
+}
+
 pub fn part2(input: String) {
   use parsed <- result.try(parse_input(input))
-  use result <- result.try(simulate_guard(parsed, 10_000))
+  use result <- result.try(simulate_guard(parsed, maximum_iterations))
   let State(Map(_, width, height), _, PathHistory(coords)) = result
-  coords
-  |> set.to_list
-  |> list.filter(fn(coord) {
-    let Coord(x, y) = coord
-    x >= 0 && x < width && y >= 0 && y < height
+  let coord_list =
+    coords
+    |> set.to_list
+    |> list.filter(fn(coord) {
+      let Coord(x, y) = coord
+      x >= 0 && x < width && y >= 0 && y < height
+    })
+
+  let handles =
+    list.map(list.sized_chunk(coord_list, chunk_size), fn(chunk) {
+      task.async(fn() {
+        chunk
+        |> list.fold(0, fn(acc, new_obs) { acc + part2_worker(parsed, new_obs) })
+      })
+    })
+
+  list.fold(handles, Ok(0), fn(acc, handle) {
+    use c <- result.try(
+      task.try_await(handle, maximum_wait)
+      |> result.map_error(fn(_) { TimeOut(maximum_wait) }),
+    )
+    use acc_n <- result.try(acc)
+    Ok(c + acc_n)
   })
-  |> list.fold(0, fn(acc, new_obs) {
-    let new_parsed = add_obstacle(parsed, new_obs)
-    case simulate_guard(new_parsed, 10_000) {
-      Error(_) -> acc + 1
-      _ -> acc
-    }
-  })
-  |> Ok()
 }
