@@ -186,10 +186,10 @@ pub fn part1(input: String) {
   Ok(distinct_positions(result))
 }
 
-fn already_obstacle_p(state: State, coord: Coord) -> Bool {
-  let State(Map(a, _, _), _, _) = state
-  set.contains(a, coord)
-}
+// fn already_obstacle_p(state: State, coord: Coord) -> Bool {
+//   let State(Map(a, _, _), _, _) = state
+//   set.contains(a, coord)
+// }
 
 fn add_obstacle(state: State, coord: Coord) -> State {
   let State(map, _, _) = state
@@ -198,22 +198,21 @@ fn add_obstacle(state: State, coord: Coord) -> State {
 }
 
 pub fn part2(input: String) {
-  use parsed <- result.map(parse_input(input))
-  let State(Map(_, width, height), _, _) = parsed
-  list.fold(list.range(0, height - 1), 0, fn(acc, y) {
-    list.fold(list.range(0, width - 1), 0, fn(acci, x) {
-      let curr_coord = Coord(x, y)
-      case already_obstacle_p(parsed, curr_coord) {
-        True -> acci
-        False -> {
-          let new_parsed = add_obstacle(parsed, curr_coord)
-          case simulate_guard(new_parsed, 10_000) {
-            Error(_) -> acci + 1
-            _ -> acci
-          }
-        }
-      }
-    })
-    + acc
+  use parsed <- result.try(parse_input(input))
+  use result <- result.try(simulate_guard(parsed, 10_000))
+  let State(Map(_, width, height), _, PathHistory(coords)) = result
+  coords
+  |> set.to_list
+  |> list.filter(fn(coord) {
+    let Coord(x, y) = coord
+    x >= 0 && x < width && y >= 0 && y < height
   })
+  |> list.fold(0, fn(acc, new_obs) {
+    let new_parsed = add_obstacle(parsed, new_obs)
+    case simulate_guard(new_parsed, 10_000) {
+      Error(_) -> acc + 1
+      _ -> acc
+    }
+  })
+  |> Ok()
 }
